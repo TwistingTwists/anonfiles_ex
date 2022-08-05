@@ -7,7 +7,7 @@ defmodule AnonDown do
   import HTTPoison.Retry
   import HTTP.API
 
-  def download(url, timeout \\ 120_000, retries_count \\ 5) do
+  def download(url, timeout \\ 120_000, retries_count \\ 5, base_url \\ @base_url) do
     %{
       "data" => %{
         "file" => %{
@@ -23,7 +23,7 @@ defmodule AnonDown do
         }
       },
       "status" => status
-    } = info(url)
+    } = info(url, base_url)
 
     IO.inspect("#{retries_count} -> trying url -> #{full_url}\n")
 
@@ -82,7 +82,7 @@ defmodule AnonDown do
   }
 
   """
-  def info(url) do
+  def info(url, base_url) do
     file_id =
       url
       |> String.split("://")
@@ -91,7 +91,7 @@ defmodule AnonDown do
       |> Enum.at(1)
 
     path = "/v2/file/#{file_id}/info"
-    full_path = (@base_url <> path) |> IO.inspect(label: "full_path")
+    full_path = (base_url <> path) |> IO.inspect(label: "full_path")
 
     HTTPoison.get(full_path)
     |> autoretry(max_attempts: 5, wait: 1500, include_404s: true, retry_unknown_errors: true)
@@ -119,4 +119,6 @@ defmodule AnonDown do
     #   filename
     # end
   end
+
+  # def get_base-url
 end
