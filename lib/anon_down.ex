@@ -30,7 +30,9 @@ defmodule AnonDown do
     {:ok, cdn_url} = download_page(full_url) |> IO.inspect(label: "download_page")
 
     if(status) do
-      filename_with_extension = file_name |> with_extension() |> IO.inspect(label: "filename_with_extension")
+      filename_with_extension =
+        file_name |> with_extension() |> IO.inspect(label: "filename_with_extension")
+
       file = File.open!(filename_with_extension, [:write])
 
       http_poison_opts = [headers: [{"Accept", "application/json"}, {"User-Agent", "AnonDown"}]]
@@ -104,13 +106,14 @@ defmodule AnonDown do
       filename
       |> String.split("_")
       |> List.last()
+      |> String.trim()
 
-    extension_list = ["mp4", "pdf", "mp3", "jpeg", "jpg", "png", "gif"]
+    # extension_list = ["mp4", "pdf", "mp3", "jpeg", "jpg", "png", "gif"]
 
-    if(extension in extension_list) do
-      filename <> "_even_bot." <> extension
-    else
-      filename
-    end
+    # if(extension in extension_list) do
+    filename <> "_even_bot." <> extension
+    # else
+    #   filename
+    # end
   end
 end
