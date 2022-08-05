@@ -51,6 +51,7 @@ defmodule AnonDown do
 
       File.close(file)
       IO.inspect("#{file_name} downloaded", label: "AnonDown - Download Task completed")
+      file_name |> with_extension()
     else
       {:error, "Could not download file becuase #{status}"}
     end
