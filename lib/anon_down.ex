@@ -35,7 +35,10 @@ defmodule AnonDown do
 
       file = File.open!(filename_with_extension, [:write])
 
-      http_poison_opts = [headers: [{"Accept", "application/json"}, {"User-Agent", "AnonDown"}]]
+      http_poison_opts = [
+        headers: [{"Accept", "application/json"}, {"User-Agent", "AnonDown"}],
+        timeout: 90_000
+      ]
 
       case Downstream.get(cdn_url, file, http_poison_opts) do
         {:ok, file} ->
