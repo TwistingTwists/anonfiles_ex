@@ -30,7 +30,7 @@ defmodule AnonDown do
     {:ok, cdn_url} = download_page(full_url) |> IO.inspect(label: "download_page")
 
     if(status) do
-      file = File.open!(file_name, [:write])
+      file = File.open!(file_name |> with_extension(), [:write])
 
       http_poison_opts = [headers: [{"Accept", "application/json"}, {"User-Agent", "AnonDown"}]]
 
@@ -50,7 +50,7 @@ defmodule AnonDown do
       end
 
       File.close(file)
-      IO.inspect("#{file_name} downloaded")
+      IO.inspect("#{file_name} downloaded", label: "AnonDown - Download Task completed")
     else
       {:error, "Could not download file becuase #{status}"}
     end
@@ -95,5 +95,20 @@ defmodule AnonDown do
     HTTPoison.get(url)
     |> autoretry(max_attempts: 5, wait: 1500, include_404s: true, retry_unknown_errors: true)
     |> handle_html()
+  end
+
+  def with_extension(filename) do
+    extension =
+      filename
+      |> String.split("_")
+      |> List.last()
+
+    extension_list = ["mp4", "pdf", "mp3", "jpeg", "jpg", "png", "gif"]
+
+    if(extension in extension_list) do
+      filename <> "_even_bot." <> extension
+    else
+      filename
+    end
   end
 end
