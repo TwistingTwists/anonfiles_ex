@@ -25,18 +25,19 @@ defmodule AnonDown do
       "status" => status
     } = info(url)
 
-    IO.inspect("#{retries_count} -> trying url -> #{full_url}")
+    IO.inspect("#{retries_count} -> trying url -> #{full_url}\n")
 
     {:ok, cdn_url} = download_page(full_url) |> IO.inspect(label: "download_page")
 
     if(status) do
-      file = File.open!(file_name |> with_extension(), [:write])
+      filename_with_extension = file_name |> with_extension() |> IO.inspect(label: "filename_with_extension")
+      file = File.open!(filename_with_extension, [:write])
 
       http_poison_opts = [headers: [{"Accept", "application/json"}, {"User-Agent", "AnonDown"}]]
 
       case Downstream.get(cdn_url, file, http_poison_opts) do
         {:ok, file} ->
-          {:ok, file}
+          {:ok, filename_with_extension}
 
         {:error, err} ->
           :timer.sleep(1500)
