@@ -49,7 +49,7 @@ defmodule AnonDown do
 
           if retries_count > 0 do
             IO.inspect("got - #{inspect(err)} \n")
-            download(url, retries_count - 1)
+            download(url, 120_000, retries_count - 1)
           else
             {:error, "#{inspect(err)} - could not download after 5 retires"}
           end

@@ -9,6 +9,8 @@ defmodule HTTP.API do
     {:error, "#{inspect(error)}"}
   end
 
+  def handle_html({:ok, []}), do: {:error, "EMPTY_HTML_BODY"}
+
   def handle_html({:ok, response}) do
     {:ok, html_body} =
       response.body
