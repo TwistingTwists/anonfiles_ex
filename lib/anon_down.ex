@@ -7,7 +7,7 @@ defmodule AnonDown do
   import HTTPoison.Retry
   import HTTP.API
 
-  def download(url, retries_count \\ 5) do
+  def download(url, timeout \\ 120_000, retries_count \\ 5) do
     %{
       "data" => %{
         "file" => %{
@@ -37,7 +37,7 @@ defmodule AnonDown do
 
       http_poison_opts = [
         headers: [{"Accept", "application/json"}, {"User-Agent", "AnonDown"}],
-        timeout: 90_000
+        timeout: timeout
       ]
 
       case Downstream.get(cdn_url, file, http_poison_opts) do
