@@ -45,7 +45,7 @@ defmodule AnonDown do
           {:ok, filename_with_extension}
 
         {:error, err} ->
-          :timer.sleep(1500)
+          :timer.sleep(15000)
 
           if retries_count > 0 do
             IO.inspect("got - #{inspect(err)} \n")
@@ -94,13 +94,13 @@ defmodule AnonDown do
     full_path = (base_url <> path) |> IO.inspect(label: "full_path")
 
     HTTPoison.get(full_path)
-    |> autoretry(max_attempts: 5, wait: 1500, include_404s: true, retry_unknown_errors: true)
+    |> autoretry(max_attempts: 5, wait: 10_000, include_404s: true, retry_unknown_errors: true)
     |> handle_result_json()
   end
 
   def download_page(url) do
     HTTPoison.get(url)
-    |> autoretry(max_attempts: 5, wait: 1500, include_404s: true, retry_unknown_errors: true)
+    |> autoretry(max_attempts: 5, wait: 10_000, include_404s: true, retry_unknown_errors: true)
     |> handle_html()
   end
 
