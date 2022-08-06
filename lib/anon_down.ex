@@ -6,6 +6,7 @@ defmodule AnonDown do
 
   import HTTPoison.Retry
   import HTTP.API
+  require Logger
 
   def download(url, timeout \\ 120_000, retries_count \\ 5, base_url \\ @base_url) do
     %{
@@ -25,7 +26,7 @@ defmodule AnonDown do
       "status" => status
     } = info(url, base_url)
 
-    IO.inspect("#{retries_count} -> trying url -> #{full_url}\n")
+    IO.inspect("#{retries_count} -> trying url -> #{full_url}\n") |> Logger.info()
 
     case download_page(full_url) |> IO.inspect(label: "download_page") do
       {:ok, cdn_url} ->
@@ -35,11 +36,12 @@ defmodule AnonDown do
           file_name: file_name,
           timeout: timeout,
           retries_count: retries_count,
-          status: status
+          status: status,
+          base_url: base_url
         })
 
       {:error, reason} ->
-        IO.inspect(label: "no cdn_url#{inspect(reason)}")
+        IO.inspect(label: "no cdn_url#{inspect(reason)}") |> Logger.debug()
         ""
     end
   end
@@ -51,12 +53,16 @@ defmodule AnonDown do
           file_name: file_name,
           timeout: timeout,
           retries_count: retries_count,
-          status: status
+          status: status,
+          base_url: base_url
         } = _opts
       ) do
     if(status) do
       filename_with_extension =
-        file_name |> with_extension() |> IO.inspect(label: "filename_with_extension")
+        file_name
+        |> with_extension()
+        |> IO.inspect(label: "filename_with_extension")
+        |> Logger.info()
 
       file = File.open!(filename_with_extension, [:write])
 
@@ -73,18 +79,26 @@ defmodule AnonDown do
           :timer.sleep(15000)
 
           if retries_count > 0 do
-            IO.inspect("got - #{inspect(err)} \n")
-            download(url, :infinity, retries_count - 1)
+            IO.inspect("got - #{inspect(err)} \n") |> Logger.warn()
+            download(url, :infinity, retries_count - 1, base_url)
           else
-            {:error, "#{inspect(err)} - could not download after 5 retires"}
+            Logger.warn("#{inspect(err)} - could not download after 5 retires")
+            {:error, err}
           end
       end
 
       File.close(file)
+
       IO.inspect("#{file_name} downloaded", label: "AnonDown - Download Task completed")
+      |> Logger.info()
+
       file_name |> with_extension()
     else
-      {:error, "Could not download file becuase #{status}"}
+      status_message =
+        "Could not download file becuase #{status}"
+        |> Logger.warn()
+
+      {:error, status_message}
     end
   end
 
@@ -115,8 +129,8 @@ defmodule AnonDown do
       |> String.split("/")
       |> Enum.at(1)
 
-    path = "/v2/file/#{file_id}/info"
-    full_path = (base_url <> path) |> IO.inspect(label: "full_path")
+    path = "/v2/file/#{file_id}/info" |> Logger.info()
+    full_path = (base_url <> path) |> IO.inspect(label: "full_path") |> Logger.info()
 
     HTTPoison.get(full_path)
     |> autoretry(max_attempts: 5, wait: 10_000, include_404s: true, retry_unknown_errors: true)
@@ -139,7 +153,7 @@ defmodule AnonDown do
     # extension_list = ["mp4", "pdf", "mp3", "jpeg", "jpg", "png", "gif"]
 
     # if(extension in extension_list) do
-    filename <> "_even_bot." <> extension
+    (filename <> "_even_bot." <> extension) |> Logger.info()
     # else
     #   filename
     # end
