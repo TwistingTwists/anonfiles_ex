@@ -27,8 +27,33 @@ defmodule AnonDown do
 
     IO.inspect("#{retries_count} -> trying url -> #{full_url}\n")
 
-    {:ok, cdn_url} = download_page(full_url) |> IO.inspect(label: "download_page")
+    case download_page(full_url) |> IO.inspect(label: "download_page") do
+      {:ok, cdn_url} ->
+        do_download(%{
+          url: url,
+          cdn_url: cdn_url,
+          file_name: file_name,
+          timeout: timeout,
+          retries_count: retries_count,
+          status: status
+        })
 
+      {:error, reason} ->
+        IO.inspect(label: "no cdn_url#{inspect(reason)}")
+        ""
+    end
+  end
+
+  def do_download(
+        %{
+          url: url,
+          cdn_url: cdn_url,
+          file_name: file_name,
+          timeout: timeout,
+          retries_count: retries_count,
+          status: status
+        } = _opts
+      ) do
     if(status) do
       filename_with_extension =
         file_name |> with_extension() |> IO.inspect(label: "filename_with_extension")
